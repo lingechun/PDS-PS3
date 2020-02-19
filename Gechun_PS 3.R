@@ -17,3 +17,15 @@ pl <- ggplot(data=primaryPolls)+
 pl + theme_minimal()
 #change the axis labels and legends
 pl + labs(x="Start Date", y="Percentage") + theme(legend.position="bottom")
+
+#2
+#re-organize the dataset so that there is only one row for each candidate-state dyad
+primaryPolls<-read.csv('https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv', stringsAsFactors = F)
+primaryPolls$start_date<-as.Date(primaryPolls$start_date, "%m/%d/%Y")
+candidate.state <- summarise(group_by(primaryPolls, candidate_name, state), count=n())
+
+#compare the size of this dataset to our original dataset using the object_size command
+object.size(primaryPolls)
+object.size(candidate.state)
+
+
