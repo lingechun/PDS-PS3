@@ -1,5 +1,6 @@
 #1
 #download and subset data
+library(ggplot2)
 primaryPolls<-read.csv('https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv', stringsAsFactors = F)
 primaryPolls$start_date<-as.Date(primaryPolls$start_date, "%m/%d/%Y")
 primaryPolls<-primaryPolls[primaryPolls$state%in%c("Alabama", "Arkansas", "California", "Colorado", "Maine", "Massachusetts", "Minnesota", "North Carolina", "Oklahoma", "Tennessee", "Texas", "Utah", "Vermont", "Virginia"),]
@@ -27,5 +28,16 @@ candidate.state <- summarise(group_by(primaryPolls, candidate_name, state), coun
 #compare the size of this dataset to our original dataset using the object_size command
 object.size(primaryPolls)
 object.size(candidate.state)
+
+#3
+library(fivethirtyeight)
+library(tidyverse)
+polls <- read_csv('https://jmontgomery.github.io/PDS/Datasets/president _primary_polls_feb2020.csv')
+Endorsements <- endorsements_2020
+
+
+
+
+
 
 
