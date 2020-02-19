@@ -26,16 +26,16 @@ primaryPolls$start_date<-as.Date(primaryPolls$start_date, "%m/%d/%Y")
 candidate.state <- summarise(group_by(primaryPolls, candidate_name, state), count=n())
 
 #compare the size of this dataset to our original dataset using the object_size command
-object.size(primaryPolls)
-object.size(candidate.state)
+print(object.size(primaryPolls),units="auto")
+print(object.size(candidate.state), units="auto")
 
 #3
 library(fivethirtyeight)
 library(tidyverse)
-polls <- read_csv('https://jmontgomery.github.io/PDS/Datasets/president _primary_polls_feb2020.csv')
+polls <- read_csv(file="https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv")
 Endorsements <- endorsements_2020
-
-
+#change the Endorsements variable name endorsee to candidate_name
+rename(Endorsements, candidate_name=endorsee)
 
 
 
