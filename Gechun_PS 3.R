@@ -89,8 +89,5 @@ filter(popular, popular.rank%in%c(1:5))$text
 filter(retweeted, retweeted.rank%in%c(1:5))$text
 
 
-fruits <- c("one apple", "two pears", "three bananas")
-str_replace(fruits, "one", "1")
-
 
 
