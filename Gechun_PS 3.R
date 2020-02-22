@@ -67,13 +67,12 @@ p + labs(x="Candidates", y="Number of Endorsements", title="Each Candidate's End
 
 
 #4
-install.packages("tm")
-install.packages("lubridate")
-install.packages("wordcloud")
+library(RColorBrewer)
 library(tidyverse) 
 library(tm)  
 library(lubridate) 
 library(wordcloud)
+library(SnowballC)
 tweets <- read_csv('https://politicaldatascience.com/PDS/Datasets/trump_tweets.csv')
 #separate the created_at variable into two new variables where the date and the time are in separate columns
 tweets <- tweets %>%
@@ -83,11 +82,42 @@ range(tweets$date)
 #subset the data to only include original tweets
 original.tweets <- filter(tweets, is_retweet=="FALSE")
 #show the text of the President’s top 5 most popular and most retweeted tweets
-popular <- original.tweets %>% mutate(popular.rank = dense_rank(desc(favorite_count)))
-retweeted <- original.tweets %>% mutate(retweeted.rank = dense_rank(desc(retweet_count)))
+popular <- original.tweets %>% mutate(popular.rank = rank(desc(favorite_count), ties.method="first"))
+retweeted <- original.tweets %>% mutate(retweeted.rank = rank(desc(retweet_count), ties.method="first"))
 filter(popular, popular.rank%in%c(1:5))$text
 filter(retweeted, retweeted.rank%in%c(1:5))$text
+#remove punctuation and number
+a <- str_replace_all(string=original.tweets$text, pattern = "[&â€¦™ðŸ¥]", replacement="")
+text<- Corpus(VectorSource(a))
+text <- tm_map(text, removePunctuation)
+text <- tm_map(text, removeNumbers)
+#convert to lower case
+text <-tm_map(text, content_transformer(tolower))
+#remove the standard english stop words
+text <- tm_map(text,removeWords, stopwords("english"))
+#remove the following words
+text <- tm_map(text, removeWords, c("see", "people","new","want","one",
+                                         "even","must","need", "done","back",
+                                         "just","going", "know", "can", "said",
+                                         "like","many","like","realdonaldtrump"))
+#remove extraneous whitespace
+text <- tm_map(text, stripWhitespace)
+text <- tm_map(text, stemDocument)
 
+#unlist the text and split them into words
+words <- str_c(unlist(text))
+words <- str_split(words, pattern = " ")
+words <- unlist(words)
+words <- as.tibble(words)
+words <- rename(words, word=value)
+words <- words %>% count(word)
+top50 <- words %>% mutate(rank = rank(desc(n), ties.method="first")) %>% filter(rank%in%c(1:50))  
+#visualize the top 50 words
+wordcloud(words = top50$word, freq = top50$n, min.freq = 3, max.words=50,
+          random.order=FALSE, rot.per=0.1, 
+          colors=brewer.pal(8, "Accent"))
+#create a document term matrix called DTM
+DTM <- TermDocumentMatrix(text, control = list(weighting = weightTfIdf))
 
-
-
+#report the 50 words with the the highest tf.idf scores using a lower frequency bound of .8
+DTM
