@@ -1,3 +1,4 @@
+#PS3 Gechun Lin
 #1
 #download and subset data
 library(ggplot2)
@@ -120,4 +121,6 @@ wordcloud(words = top50$word, freq = top50$n, min.freq = 3, max.words=50,
 DTM <- TermDocumentMatrix(text, control = list(weighting = weightTfIdf))
 
 #report the 50 words with the the highest tf.idf scores using a lower frequency bound of .8
-DTM
+freq=rowSums(as.matrix(DTM))
+tail(sort(freq), n=50)
+
