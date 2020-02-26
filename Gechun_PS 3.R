@@ -125,7 +125,7 @@ text <- tm_map(text, removeWords, c("see", "people","new","want","one",
 #remove extraneous whitespace
 text <- tm_map(text, stripWhitespace)
 text <- tm_map(text, stemDocument)
-wordcloud(text, max.words = 50, scale = c(4, 1), min.freq = 3,random.order=FALSE,rot.per=0.1, 
+wordcloud(text, max.words = 50, min.freq = 3,random.order=FALSE,
           colors = topo.colors(n = 50), random.color = TRUE)
 
 #create a document term matrix called DTM
@@ -133,5 +133,6 @@ DTM <- DocumentTermMatrix(text, control = list(weighting = weightTfIdf))
 
 #report the 50 words with the the highest tf.idf scores using a lower frequency bound of .8
 findFreqTerms(DTM, lowfreq = 0.8)
+
 
 
