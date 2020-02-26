@@ -1,39 +1,67 @@
 #PS3 Gechun Lin
+library(ggplot2)
+library(fivethirtyeight)
+library(tidyverse)
+library(dplyr)
+library(RColorBrewer)
+library(tm)  
+library(lubridate) 
+library(wordcloud)
+library(SnowballC)
+
 #1
 #download and subset data
-library(ggplot2)
 primaryPolls<-read.csv('https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv', stringsAsFactors = F)
 primaryPolls$start_date<-as.Date(primaryPolls$start_date, "%m/%d/%Y")
-primaryPolls<-primaryPolls[primaryPolls$state%in%c("Alabama", "Arkansas", "California", "Colorado", "Maine", "Massachusetts", "Minnesota", "North Carolina", "Oklahoma", "Tennessee", "Texas", "Utah", "Vermont", "Virginia"),]
-primaryPolls<-primaryPolls[primaryPolls$candidate_name%in%unique(primaryPolls$candidate_name),]
-#plot by state
-ggplot(data=primaryPolls)+
+primaryPolls<-primaryPolls%>%
+  filter(state%in%c("Alabama", "Arkansas", "California", "Colorado", "Maine", "Massachusetts", "Minnesota", "North Carolina", "Oklahoma", "Tennessee", "Texas", "Utah", "Vermont", "Virginia"))
+primaryPolls<-primaryPolls %>%
+  filter(candidate_name %in% c("Amy Klobuchar", "Bernard Sanders", "Elizabeth Warren", "Joseph R. Biden Jr.", "Michael Bloomberg", "Pete Buttigieg"))
+#Because I'm not sure Jacob want a plot by state or by candidate, I made both:
+# 1) plot by state
+p1 <- ggplot(data=primaryPolls)+
   scale_shape_manual(values = 1:nlevels(primaryPolls$candidate_name))+
   geom_point(mapping = aes(x=start_date, y=pct,  color=candidate_name), alpha=.8)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   facet_wrap(~ state, nrow=5)
+p1
 #change to the minimial theme
-pl <- ggplot(data=primaryPolls)+
+p1 <- p1 + theme_minimal()
+p1
+#change the axis labels and legends
+p1 + labs(x="Start Date", y="Percentage") + scale_colour_discrete(name="Candidates") 
+
+# 2) plot by candiate
+p2 <- ggplot(data=primaryPolls)+
   scale_shape_manual(values = 1:nlevels(primaryPolls$candidate_name))+
   geom_point(mapping = aes(x=start_date, y=pct,  color=candidate_name), alpha=.8)+
-  facet_wrap(~ state, nrow=5)
-pl + theme_minimal()
+  geom_smooth(mapping = aes(x=start_date, y=pct, color=candidate_name)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  facet_wrap(~ candidate_name, nrow=3)
+p2
+#change to the minimial theme
+p2 <- p2 + theme_minimal()
+p2
 #change the axis labels and legends
-pl + labs(x="Start Date", y="Percentage") + theme(legend.position="bottom")
+p2 + labs(x="Start Date", y="Percentage") + scale_colour_discrete(name="Candidates") 
+
 
 #2
 #re-organize the dataset so that there is only one row for each candidate-state dyad
 primaryPolls<-read.csv('https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv', stringsAsFactors = F)
 primaryPolls$start_date<-as.Date(primaryPolls$start_date, "%m/%d/%Y")
-candidate.state <- summarise(group_by(primaryPolls, candidate_name, state), count=n())
+basic <- primaryPolls %>% 
+  filter(candidate_name %in% c("Amy Klobuchar", "Bernard Sanders", "Elizabeth Warren", "Joseph R. Biden Jr.", "Michael Bloomberg", "Pete Buttigieg")) %>%
+  select(candidate_name, state) %>%
+  filter(state %in% state.name)
+candidate.state <- summarise(group_by(basic, candidate_name, state), count=n()) %>%
+  pivot_wider(names_from = state, values_from = count)
 
 #compare the size of this dataset to our original dataset using the object_size command
 print(object.size(primaryPolls),units="auto")
 print(object.size(candidate.state), units="auto")
 
 #3
-library(fivethirtyeight)
-library(tidyverse)
-library(dplyr)
 polls <- read_csv(file="https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv")
 Endorsements <- endorsements_2020
 #change the Endorsements variable name endorsee to candidate_name
@@ -60,7 +88,7 @@ combine.counts <- combine %>% count(candidate_name)
 #plot the number of endorsement each of the 5 candidates have
 p <- ggplot(data=combine.counts)+
   scale_shape_manual(values = 1:nlevels(combine.counts$candidate_name))+
-  geom_point(mapping = aes(x=candidate_name, y=n,  color=candidate_name), alpha=.8)
+  geom_point(mapping = aes(x=candidate_name, y=n, color=candidate_name), alpha=.8)
 p
 p + theme_dark()
 #using the knowledge from the last step change the label of the X and Y axes to be more informative, add a title, and use your favorite theme
@@ -68,12 +96,6 @@ p + labs(x="Candidates", y="Number of Endorsements", title="Each Candidate's End
 
 
 #4
-library(RColorBrewer)
-library(tidyverse) 
-library(tm)  
-library(lubridate) 
-library(wordcloud)
-library(SnowballC)
 tweets <- read_csv('https://politicaldatascience.com/PDS/Datasets/trump_tweets.csv')
 #separate the created_at variable into two new variables where the date and the time are in separate columns
 tweets <- tweets %>%
@@ -88,8 +110,7 @@ retweeted <- original.tweets %>% mutate(retweeted.rank = rank(desc(retweet_count
 filter(popular, popular.rank%in%c(1:5))$text
 filter(retweeted, retweeted.rank%in%c(1:5))$text
 #remove punctuation and number
-a <- str_replace_all(string=original.tweets$text, pattern = "[&â€¦™ðŸ¥]", replacement="")
-text<- Corpus(VectorSource(a))
+text<- VCorpus(VectorSource(original.tweets$text))
 text <- tm_map(text, removePunctuation)
 text <- tm_map(text, removeNumbers)
 #convert to lower case
@@ -104,23 +125,13 @@ text <- tm_map(text, removeWords, c("see", "people","new","want","one",
 #remove extraneous whitespace
 text <- tm_map(text, stripWhitespace)
 text <- tm_map(text, stemDocument)
+wordcloud(text, max.words = 50, scale = c(4, 1), min.freq = 3,random.order=FALSE,rot.per=0.1, 
+          colors = topo.colors(n = 50), random.color = TRUE)
 
-#unlist the text and split them into words
-words <- str_c(unlist(text))
-words <- str_split(words, pattern = " ")
-words <- unlist(words)
-words <- as.tibble(words)
-words <- rename(words, word=value)
-words <- words %>% count(word)
-top50 <- words %>% mutate(rank = rank(desc(n), ties.method="first")) %>% filter(rank%in%c(1:50))  
-#visualize the top 50 words
-wordcloud(words = top50$word, freq = top50$n, min.freq = 3, max.words=50,
-          random.order=FALSE, rot.per=0.1, 
-          colors=brewer.pal(8, "Accent"))
 #create a document term matrix called DTM
-DTM <- TermDocumentMatrix(text, control = list(weighting = weightTfIdf))
+DTM <- DocumentTermMatrix(text, control = list(weighting = weightTfIdf))
 
 #report the 50 words with the the highest tf.idf scores using a lower frequency bound of .8
-freq=rowSums(as.matrix(DTM))
-tail(sort(freq), n=50)
+findFreqTerms(DTM, lowfreq = 0.8)
+
 
