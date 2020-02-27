@@ -132,7 +132,11 @@ wordcloud(text, max.words = 50, min.freq = 3,random.order=FALSE,
 DTM <- DocumentTermMatrix(text, control = list(weighting = weightTfIdf))
 
 #report the 50 words with the the highest tf.idf scores using a lower frequency bound of .8
+#this code only returns words without their tf.idf scores and it cannot order these words according to their tf.idf scores
 findFreqTerms(DTM, lowfreq = 0.8)
-
-
+#I find this code but my computer cannot run it...
+DTM %>% as.matrix() %>%
+  apply(MARGIN = 2, sum) %>%
+  sort(decreasing = TRUE) %>%
+  head(50)
 
