@@ -105,9 +105,10 @@ range(tweets$date)
 #subset the data to only include original tweets
 original.tweets <- filter(tweets, is_retweet=="FALSE")
 #show the text of the President’s top 5 most popular and most retweeted tweets
-popular <- original.tweets %>% mutate(popular.rank = rank(desc(favorite_count), ties.method="first"))
-retweeted <- original.tweets %>% mutate(retweeted.rank = rank(desc(retweet_count), ties.method="first"))
-filter(popular, popular.rank%in%c(1:5))$text
+popular <- original.tweets %>% arrange(desc(favorite_count))
+retweeted <- original.tweets %>% arrange(desc(retweet_count))
+popular[1:5, ]$text
+retweeted[1:5, ]$text
 filter(retweeted, retweeted.rank%in%c(1:5))$text
 #remove punctuation and number
 text<- VCorpus(VectorSource(original.tweets$text))
@@ -134,7 +135,7 @@ DTM <- DocumentTermMatrix(text, control = list(weighting = weightTfIdf))
 #report the 50 words with the the highest tf.idf scores using a lower frequency bound of .8
 #this code only returns words without their tf.idf scores and it cannot order these words according to their tf.idf scores
 findFreqTerms(DTM, lowfreq = 0.8)
-#I find this code but my computer cannot run it...
+#my computer get stuck when running it...
 DTM %>% as.matrix() %>%
   apply(MARGIN = 2, sum) %>%
   sort(decreasing = TRUE) %>%
