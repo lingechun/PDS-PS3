@@ -86,10 +86,7 @@ combine <- Endorsements %>%
 #create a variable which indicates the number of endorsements for each of the five candidates
 combine.counts <- combine %>% count(candidate_name)
 #plot the number of endorsement each of the 5 candidates have
-p <- ggplot(data=combine.counts)+
-  scale_shape_manual(values = 1:nlevels(combine.counts$candidate_name))+
-  geom_point(mapping = aes(x=candidate_name, y=n, color=candidate_name), alpha=.8)+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+p <- ggplot(data=combine, mapping=aes(x=candidate_name))+stat_count()+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 p
 p + theme_dark()
 #using the knowledge from the last step change the label of the X and Y axes to be more informative, add a title, and use your favorite theme
