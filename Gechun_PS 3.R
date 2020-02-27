@@ -126,7 +126,7 @@ text <- tm_map(text, removeWords, c("see", "people","new","want","one",
 text <- tm_map(text, stripWhitespace)
 text <- tm_map(text, stemDocument)
 wordcloud(text, max.words = 50, min.freq = 3,random.order=FALSE,
-          colors = topo.colors(n = 50), random.color = TRUE)
+          colors=brewer.pal(8, "Accent"))
 
 #create a document term matrix called DTM
 DTM <- DocumentTermMatrix(text, control = list(weighting = weightTfIdf))
