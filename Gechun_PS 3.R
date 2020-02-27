@@ -107,7 +107,7 @@ popular <- original.tweets %>% arrange(desc(favorite_count))
 retweeted <- original.tweets %>% arrange(desc(retweet_count))
 popular[1:5, ]$text
 retweeted[1:5, ]$text
-filter(retweeted, retweeted.rank%in%c(1:5))$text
+
 #remove punctuation and number
 text<- VCorpus(VectorSource(original.tweets$text))
 text <- tm_map(text, removePunctuation)
