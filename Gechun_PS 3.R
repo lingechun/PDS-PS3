@@ -132,7 +132,7 @@ DTM <- DocumentTermMatrix(text, control = list(weighting = weightTfIdf))
 
 #report the 50 words with the the highest tf.idf scores using a lower frequency bound of .8
 #this code only returns words without their tf.idf scores and it cannot order these words according to their tf.idf scores
-findFreqTerms(DTM, lowfreq = 0.8)
+findFreqTerms(DTM, lowfreq = 0.8)[1:50]
 #my computer get stuck when running it...
 DTM %>% as.matrix() %>%
   apply(MARGIN = 2, sum) %>%
